@@ -1,0 +1,16 @@
+{
+  "name": "rushhour",
+  "version": "0.1.0",
+  "description": "A simple Rushhour™ game for the browser.",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["Game", "JS", "Javascript", "Rushhour"],
+  "author": "Louis Stanko",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.8"
+  }
+}

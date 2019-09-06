@@ -1,0 +1,66 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    background: url(https://blog.modernsetups.com/wp-content/uploads/2019/02/pink-blue-gradient-1024x683.jpg?x97945) no-repeat fixed center;
+    background-size: cover;
+}
+
+#cnvs {
+    padding: 0;
+    margin: auto;
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+li {
+    list-style: none;
+    text-indent: 3px;
+}
+
+li:hover::before {
+    content: ">";
+}
+
+.font {
+    font-family: 'Press Start 2P', cursive;
+}
+
+.moves {
+    position: fixed;
+    z-index: 2;
+    bottom: 0;
+    background-color: white;
+    padding-left: 15px;
+    line-height: 15px;
+}
+
+.modal {
+    z-index: 1;
+    border: 3px black solid;
+    position: fixed;
+    margin-left: 15vw;
+    margin-right: 15vw;
+    background: white;
+    width: 70vw;
+    height: 30vh;
+    margin-top: 35vh;
+    margin-bottom: 35vh;
+    padding: 20px;
+    font-family: 'Press Start 2P', cursive;
+}
+.show {
+    display: block;
+}
+.hide {
+    display: none;
+}
+
+.menu-item {
+    text-decoration: none;
+    color: black;
+    cursor: pointer;
+}

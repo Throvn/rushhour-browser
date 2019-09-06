@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Rushhour</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Press+Start+2P&display=swap" rel="stylesheet"> 
+    <link rel="stylesheet" type="text/css" media="screen" href="styles.css" />
+</head>
+<body>
+    <div class="settings" style="position: fixed;">
+        <a onclick="document.getElementById('header').innerText = 'Settings'; document.getElementsByClassName('modal')[0].classList = 'modal show';"><img src="images/cog-solid.png" style="background-color: white; width: 45px; height: 45px; padding: 5px;" alt="settings"></a>
+    </div>
+    <div class="moves">
+        <h1 class="font">Moves: <span id="move">0</span></h1>
+    </div>
+    <div class="modal hide" style="overflow: scroll;">
+        <h1 style="text-align: center;" id="header">You Won</h1>
+        <ul>
+            <a href="/" class="menu-item">
+                <li>Back to homepage</li>
+            </a>
+            <br>
+            <a href="./" class="menu-item">
+                <li>Play again</li>
+            </a>
+            <br>
+            <a id="nxtLvl" class="menu-item">
+                <li>Random level</li>
+            </a>
+            <br>
+            <a class="menu-item" onclick="document.getElementsByClassName('modal')[0].classList = 'modal hide';">
+                <li>Quit Screen</li>
+            </a>
+        </ul>
+    </div>
+    <canvas id="cnvs"></canvas>
+    <script src="main.js"></script>
+</body>
+</html>
