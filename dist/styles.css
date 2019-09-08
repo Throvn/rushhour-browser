@@ -1,8 +1,6 @@
 html, body {
     margin: 0;
     padding: 0;
-    background: url(https://blog.modernsetups.com/wp-content/uploads/2019/02/pink-blue-gradient-1024x683.jpg?x97945) no-repeat fixed center;
-    background-size: cover;
 }
 
 #cnvs {
@@ -26,7 +24,7 @@ li:hover::before {
 }
 
 .font {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'IBM 3270', semi-narrow;
 }
 
 .moves {
@@ -35,6 +33,7 @@ li:hover::before {
     bottom: 0;
     background-color: white;
     padding-left: 15px;
+    padding-right: 15px;
     line-height: 15px;
 }
 
@@ -50,7 +49,7 @@ li:hover::before {
     margin-top: 35vh;
     margin-bottom: 35vh;
     padding: 20px;
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'IBM 3270', semi-narrow;
 }
 .show {
     display: block;

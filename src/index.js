@@ -1,11 +1,12 @@
+import ConfettiGenerator from 'confetti-js'
 var $canvas = document.getElementById('cnvs')
 $canvas.width = 630
 $canvas.height = 630
 var context = $canvas.getContext('2d')
-
+var moveSound = new Audio('./audio/tap-mellow.mp3')
 var fieldSize = 100, fieldVisibleSize = 100, offset = 15 // global variables
 var moves = 0;
-
+var confetti = new ConfettiGenerator({target: 'cnvs', rotate: true})
 //function for determining how the vehicle is placed
 function getDirection(pos) {
     var counts = {x: [], y: []}
@@ -96,10 +97,12 @@ class Vehicle {
         }
         if (this.red === true && (this.pos[0] === 5 || this.pos[2] === 5) && (this.pos[1] === 2 || this.pos[3] === 2)) {
             document.getElementById('header').innerText = 'You Won';
+            confetti.render();
             document.getElementsByClassName("modal")[0].classList = "modal show"
         }
         moves++;
         document.getElementById('move').innerText = moves
+        moveSound.play()
         repaint()
     }
 }
@@ -129,7 +132,7 @@ function repaint() {
 
 var levels = [
     [new Vehicle([2,5,3,5,4,5], 'lightgreen'), new Vehicle([0,4,0,5], 'orange'), new Vehicle([0,1,0,2,0,3], 'violet'),new Vehicle([4,4,5,4], 'lightblue'), new Vehicle([0,0,1,0], 'green'), new Vehicle([3,1,3,2,3,3], 'blue'), new Vehicle([5,0,5,1,5,2], 'yellow'), new Vehicle([1,2,2,2], undefined, true)],
-    [new Vehicle([3,0,4,0,5,0], 'yellow'), new Vehicle([3,1,3,2], 'orange'), new Vehicle([5,1,5,2,5,3], 'purple'),new Vehicle([4,2,4,3], 'lightblue'), new Vehicle([4,4,5,4], 'darkblue'), new Vehicle([0,3,1,3,2,3], 'blue'), new Vehicle([0,0,0,1], 'darkgreen'), new Vehicle([3,5,4,5], 'lightgray'), new Vehicle([2,5,2,4], 'pink'), new Vehicle([0,5,1,5], 'lightgreen'), new Vehicle([0,2,1,2], undefined, true)],
+    [new Vehicle([3,0,4,0,5,0], 'yellow'), new Vehicle([3,1,3,2], 'orange'), new Vehicle([5,1,5,2,5,3], 'purple'),new Vehicle([4,2,4,3], 'lightblue'), new Vehicle([4,4,5,4], 'darkblue'), new Vehicle([0,3,1,3,2,3], 'blue'), new Vehicle([0,0,0,1], 'darkgreen'), new Vehicle([3,5,4,5], 'lightgray'), new Vehicle([2,4,2,5], 'pink'), new Vehicle([0,5,1,5], 'lightgreen'), new Vehicle([0,2,1,2], undefined, true)],
     [new Vehicle([3,2,3,3,3,4], 'yellow'), new Vehicle([1,3,2,3], 'darkgreen'), new Vehicle([5,3,5,4,5,5], 'purple'), new Vehicle([1,4,1,5], 'orange'), new Vehicle([2,5,3,5], 'lightblue'), new Vehicle([1,2,2,2], undefined, true)],
     
     [new Vehicle([0,0,0,1,0,2], 'yellow'), new Vehicle([2,3,2,4], 'orange'), new Vehicle([3,0,3,1,3,2], 'purple'),new Vehicle([5,4,5,5], 'lightblue'), new Vehicle([3,3,4,3,5,3], 'blue'), new Vehicle([1,0,2,0], 'darkgreen'), new Vehicle([2,5,3,5,4,5], 'lightgreen'), new Vehicle([1,2,2,2], undefined, true)],
@@ -143,14 +146,14 @@ function check(x, y) {
             var currX = vehicles[index].pos[i];
             var currY = vehicles[index].pos[i+1];
             if(x === currX && y === currY) { 
-                return vehicles[index].move(x, y, index)
+                return [x,y,index]
             }
             i = i+1
         }
     }
 }
 
-$canvas.onclick = function (e) {
+function getCoordinates(e) {
     var x = e.layerX, y = e.layerY
     switch (true) {
         case (x > offset+(fieldSize * 5) && x < (offset + (fieldSize * 5) + fieldVisibleSize)):
@@ -196,7 +199,63 @@ $canvas.onclick = function (e) {
         default:
             return;
     }
-    check(x, y)
+    return [x,y]
+}
+
+$canvas.onclick = function (e) {
+    var coords = getCoordinates(e)
+    var checked = check(coords[0], coords[1])
+    if(checked === undefined) return;
+    vehicles[checked[2]].move(checked[0], checked[1], checked[2])
+}
+
+document.onmousemove = function (e) {
+    repaint()
+    var coords = getCoordinates(e)
+    if (coords === undefined) return;
+    var checked = check(coords[0], coords[1])
+    if(checked === undefined) return;
+    var currCar = vehicles[checked[2]]
+    
+    //TODO draw arrows on top of the cars
+    context.fillStyle = 'black'
+
+    if (currCar.direction === 'y') {
+        context.beginPath();
+        context.moveTo(offset+(fieldSize * currCar.pos[0] + 1) + fieldVisibleSize - (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[1] + 1) + fieldVisibleSize / 2);
+        context.lineTo(offset+(fieldSize * currCar.pos[0] + 1) + fieldVisibleSize / 2, offset+(fieldSize * currCar.pos[1] + 1) + (fieldVisibleSize / 4));
+        context.lineTo(offset+(fieldSize * currCar.pos[0] + 1) + (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[1] + 1) + fieldVisibleSize / 2);
+        context.closePath();
+        context.fill()
+
+        context.beginPath();
+        context.moveTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + fieldVisibleSize - (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldVisibleSize / 2);
+        context.lineTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + fieldVisibleSize / 2, offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + (fieldVisibleSize * 0.75));
+        context.lineTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldVisibleSize / 2);
+        context.closePath();
+        context.fill()
+    } else if (currCar.direction === 'x') {
+        context.beginPath();
+        context.moveTo(offset+(fieldSize * currCar.pos[0] + 1) + fieldVisibleSize - (fieldVisibleSize / 2), offset+(fieldSize * currCar.pos[1] + 1) + fieldVisibleSize * 0.75);
+        context.lineTo(offset+(fieldSize * currCar.pos[0] + 1) + fieldVisibleSize / 2, offset+(fieldSize * currCar.pos[1] + 1) + (fieldVisibleSize / 4));
+        context.lineTo(offset+(fieldSize * currCar.pos[0] + 1) + (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[1] + 1) + fieldVisibleSize / 2);
+        context.closePath();
+        context.fill()
+
+        context.beginPath();
+        context.moveTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + fieldVisibleSize - (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldVisibleSize / 2);
+        context.lineTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + fieldVisibleSize / 2, offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + (fieldVisibleSize * 0.75));
+        context.lineTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + (fieldVisibleSize / 2), offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldVisibleSize / 4);
+        context.closePath();
+        context.fill()
+    }
+}
+
+document.onkeypress = function (e) {
+    console.log(e)
+    if (e.key === "q") {
+        document.getElementsByClassName("modal")[0].classList = "modal hide"
+    }
 }
 
 document.getElementById("nxtLvl").onclick = function (e) {
@@ -210,6 +269,9 @@ document.getElementById("nxtLvl").onclick = function (e) {
         }
     }
     repaint()
+    confetti.clear()
 }
 
-repaint()
+window.requestAnimationFrame(() => {
+    repaint()
+})

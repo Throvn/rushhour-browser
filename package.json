@@ -6,11 +6,19 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["Game", "JS", "Javascript", "Rushhour"],
+  "keywords": [
+    "Game",
+    "JS",
+    "Javascript",
+    "Rushhour"
+  ],
   "author": "Louis Stanko",
   "license": "MIT",
   "devDependencies": {
     "webpack": "^4.39.3",
     "webpack-cli": "^3.3.8"
+  },
+  "dependencies": {
+    "confetti-js": "0.0.15"
   }
 }
