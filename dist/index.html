@@ -1,29 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Rushhour</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" media="screen" href="styles.css" />
+    <meta name="description" content="The famous Rushhour game implemented in the browser. Play now for free!">
+    <link rel="stylesheet" type="text/css" media="screen" href="./styles.css" />
+    <link rel="shortcut icon" href="./images/favicon.webp" type="image/png">
 </head>
-<body>
-    <div class="settings" style="position: fixed;">
-        <a onclick="document.getElementById('header').innerText = 'Settings'; document.getElementsByClassName('modal')[0].classList = 'modal show';"><img src="images/cog-solid.png" style="background-color: white; width: 45px; height: 45px; padding: 5px;" alt="settings"></a>
+<body style="background-color: #1f2125;">
+    <div class="settings">
+        <a href="/" rel="noopener noreferrer"><img src="images/back-button.webp" alt="Back to homepage" style="width: 45px; height: 45px; padding: 5px;"></a>
+        <a style="cursor: pointer;" onclick="document.getElementById('header').innerText = 'Settings'; document.getElementById('modal').classList = document.getElementById('modal').classList.contains('show') ? 'modal hide' : 'modal show';"><img src="images/settings.webp" style="width: 45px; height: 45px; padding: 5px;" alt="settings"></a>
     </div>
+    <div class="settings right-0">
+        <a style="cursor: pointer;" onclick="document.getElementById('instructions').classList = document.getElementById('instructions').classList.contains('show') ? 'modal hide' : 'modal show';"><img src="images/info.webp" style="width: 45px; height: 45px; padding: 5px;" alt="settings"></a>
+    </div>
+    
     <div class="moves">
-        <h1 class="font">Moves: <span id="move">0</span></h1>
+        <h1 class="font modal-preload">Moves: <span id="move">0</span></h1>
     </div>
-    <div class="modal hide" style="overflow: scroll;">
-        <canvas id="confetti" style="display: none;"></canvas>
-        <h1 style="text-align: center;" id="header">You Won</h1>
+    <div id="modal" class="modal hide">
+        <h1 id="header" class="header">You Won</h1>
         <ul>
             <a href="/" class="menu-item">
                 <li>Back to homepage</li>
             </a>
             <br>
-            <a href="./" class="menu-item">
-                <li>Play again</li>
+            <a id="playAgain" class="menu-item">
+                <li>Play level again</li>
             </a>
             <br>
             <a id="nxtLvl" class="menu-item">
@@ -35,7 +41,29 @@
             </a>
         </ul>
     </div>
-    <canvas id="cnvs"></canvas>
-    <script src="main.js"></script>
+
+    <div id="instructions" class="modal hide">
+        <canvas id="confetti" style="display: none;"></canvas>
+        <h1 class="header">Instructions</h1>
+        <div class="instr-text">
+            <h2>How to play?</h2>
+            <p>Click on the arrows which are shown if you hover over a selected brick. The brick will move one unit in the direction. Although on mobile there are no arrows you have to do exactly the same. Just click on the start or end of a brick and the brick will move in the desired direction.</p>
+            <h2>What's the goal?</h2>
+            <p>Goal is to get the red brick on to the right side with as little moves as possible.</p>
+        </div>
+        <ul>
+            <a class="menu-item" onclick="document.getElementById('instructions').classList = 'modal hide';">
+                <li>Quit Screen</li>
+            </a>
+        </ul>
+    </div>
+
+    <div class="content">
+        <img src="./images/wood-logo.webp" alt="Rushhour logo" class="logo">
+        <canvas id="cnvs" title="game canvas"></canvas>
+    </div>
+    
+    <!-- <script src="main.js"></script> -->
+    <script src="../src/index.js"></script>
 </body>
 </html>

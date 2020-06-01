@@ -4,7 +4,7 @@
   "description": "A simple Rushhour™ game for the browser.",
   "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --config build.webpack.js"
   },
   "keywords": [
     "Game",
@@ -13,7 +13,7 @@
     "Rushhour"
   ],
   "author": "Louis Stanko",
-  "license": "MIT",
+  "license": "BSC",
   "devDependencies": {
     "webpack": "^4.39.3",
     "webpack-cli": "^3.3.8"

@@ -1,13 +1,39 @@
-import ConfettiGenerator from 'confetti-js'
 var $canvas = document.getElementById('cnvs')
 $canvas.width = 630
 $canvas.height = 630
 var context = $canvas.getContext('2d')
+var $modal = document.getElementById('modal')
 var moveSound = new Audio('./audio/tap-mellow.mp3')
-var fieldSize = 100, fieldVisibleSize = 100, offset = 15 // global variables
+var winningSound = new Audio('./audio/winning.wav')
+var fieldSize = 78, fieldVisibleSize = 78, offset = 75 // global variables
 var moves = 0;
-var confetti = new ConfettiGenerator({target: 'cnvs', rotate: true})
-//function for determining how the vehicle is placed
+
+
+// wooden background
+const bg = document.createElement('img')
+bg.src = 'images/wood-bg-bottom.webp'
+bg.onload = function() {
+    context.drawImage(bg, 0, 0,630,630);
+    repaint()
+};
+
+// wooden overlay
+const bg2 = document.createElement('img')
+bg2.src = 'images/wood-bg-top.webp'
+bg2.onload = function() {
+    context.drawImage(bg2, 0, 0,630,630);
+    //draw leave, exit
+    context.clearRect(offset + fieldSize * 6, offset + fieldSize * 2, 45, fieldVisibleSize);
+};
+
+// wooden arrows on top of the cars
+const arrow = document.createElement('img')
+arrow.src = 'images/arrow.webp'
+
+/**
+ * function for determining how the vehicle is placed
+ * @param {array} pos the car position
+ */
 function getDirection(pos) {
     var counts = {x: [], y: []}
     for (var i = 0; i < pos.length; i++) {
@@ -24,8 +50,18 @@ function getDirection(pos) {
     return counts.x.length < counts.y.length ? 'y' : 'x'
 }
 
-// Class car
+
+/**
+ * Represents a vehicle on the board
+ */
 class Vehicle {
+
+    /**
+     * 
+     * @param {array} pos array of x and y coords
+     * @param {string} color color of the car
+     * @param {boolean} red wheter the car is the red car or not
+     */
     constructor(pos = [], color = "blue", red = false) {
         this.pos = pos
         this.type = (pos.length > 4 ? "Truck" : "Car")
@@ -34,6 +70,9 @@ class Vehicle {
         this.red = red
     }
     
+    /**
+     * Draws itself onto the board
+     */
     draw () {
         for (let i = 0; i < this.pos.length; i++) {
             context.fillStyle=this.color;
@@ -41,6 +80,13 @@ class Vehicle {
             i = i+1
         }
     }
+
+    /**
+     * Moves itself to the desired position
+     * @param {number} x the desired x pos
+     * @param {number} y the desired y pos
+     * @param {number} carIndex index of the car in the vehicles array
+     */
     move (x,y, carIndex) {
         var fallback = Array.from(this.pos)
         if(this.direction === 'x') {
@@ -73,8 +119,6 @@ class Vehicle {
             }
         }
         
-        // collision detection for other cars
-        // TODO: PKWs can crash through LKWs
         for (let ind = 0; ind < vehicles.length; ind++) {
             const car = vehicles[ind];
             const len = this.type === "Truck"? 4 : 3
@@ -97,8 +141,9 @@ class Vehicle {
         }
         if (this.red === true && (this.pos[0] === 5 || this.pos[2] === 5) && (this.pos[1] === 2 || this.pos[3] === 2)) {
             document.getElementById('header').innerText = 'You Won';
-            confetti.render();
-            document.getElementsByClassName("modal")[0].classList = "modal show"
+            
+            $modal.classList = "modal show"
+            winningSound.play()
         }
         moves++;
         document.getElementById('move').innerText = moves
@@ -107,27 +152,33 @@ class Vehicle {
     }
 }
 
+/**
+ * completely redraws the canvas
+ */
 function repaint() {
     //draw background (black)
-    context.fillStyle='gray';
+    context.fillStyle='#1f2125';
     context.fillRect(0,0,630,630);
+    context.drawImage(bg, 0, 0,630,630);
 
     //draw parkinglot structure
     context.strokeStyle='white';
-    context.strokeRect(5, 5, 620, 620);
+
     for (let index = 0; index < 6; index++) {
         for (let i = 0; i < 6; i++) {
             context.strokeRect(offset + fieldSize * index, offset + fieldSize * i, fieldVisibleSize, fieldVisibleSize);
         }
     }
 
-    //draw leave, exit
-    context.clearRect(offset + fieldSize * 6 + 5,offset + fieldSize * 2,10,fieldVisibleSize);
-
     //draw cars
     vehicles.forEach(car => {
         car.draw()
     })
+
+    context.drawImage(bg2, 0, 0, 630, 630);
+    
+    //draw leave, exit
+    context.clearRect(offset + fieldSize * 6, offset + fieldSize * 2, 45, fieldVisibleSize);
 }
 
 var levels = [
@@ -137,9 +188,16 @@ var levels = [
     
     [new Vehicle([0,0,0,1,0,2], 'yellow'), new Vehicle([2,3,2,4], 'orange'), new Vehicle([3,0,3,1,3,2], 'purple'),new Vehicle([5,4,5,5], 'lightblue'), new Vehicle([3,3,4,3,5,3], 'blue'), new Vehicle([1,0,2,0], 'darkgreen'), new Vehicle([2,5,3,5,4,5], 'lightgreen'), new Vehicle([1,2,2,2], undefined, true)],
 ]
-var levelNumber = Math.floor(Math.random()*levels.length)
-var vehicles = levels[levelNumber];
 
+// choose random level and deepcopy it
+var levelNumber = Math.floor(Math.random()*levels.length)
+var vehicles = JSON.parse(JSON.stringify(levels[levelNumber])).map(car => new Vehicle(car.pos, car.color, car.red));
+
+/**
+ * Checks whether a car was clicked or not
+ * @param {number} x coordinate
+ * @param {number} y coordinate
+ */
 function check(x, y) {
     for (let index = 0; index < vehicles.length; index++) {
         for (var i = 0; i < vehicles[index].pos.length; i++) {
@@ -153,8 +211,14 @@ function check(x, y) {
     }
 }
 
+/**
+ * returns the field which was clicked on 
+ * @param {event} e the event of the mouse listener
+ * @returns [x, y]
+ */
 function getCoordinates(e) {
-    var x = e.layerX, y = e.layerY
+    var x = e.offsetX, y = e.offsetY;
+    
     switch (true) {
         case (x > offset+(fieldSize * 5) && x < (offset + (fieldSize * 5) + fieldVisibleSize)):
             x = 5
@@ -207,9 +271,32 @@ $canvas.onclick = function (e) {
     var checked = check(coords[0], coords[1])
     if(checked === undefined) return;
     vehicles[checked[2]].move(checked[0], checked[1], checked[2])
+    drawArrows(e)
 }
 
-document.onmousemove = function (e) {
+/**
+ * Draws an image to the canvas
+ * @param {image} image The image to draw
+ * @param {number} x x-Coordinate
+ * @param {number} y y-Coordinate
+ * @param {number} w width of the image
+ * @param {number} h height of the image
+ * @param {number} degrees rotation of the image in degrees
+ */
+function drawImage(image, x, y, w, h, degrees){
+    context.save();
+    context.translate(x+w/2, y+h/2);
+    context.rotate(degrees*Math.PI/180.0);
+    context.translate(-x-w/2, -y-h/2);
+    context.drawImage(image, x, y, w, h);
+    context.restore();
+}
+
+/**
+ * draws arrows on top of the active car
+ * @param {event} e mouse event
+ */
+function drawArrows(e) {
     repaint()
     var coords = getCoordinates(e)
     if (coords === undefined) return;
@@ -217,61 +304,57 @@ document.onmousemove = function (e) {
     if(checked === undefined) return;
     var currCar = vehicles[checked[2]]
     
-    //TODO draw arrows on top of the cars
     context.fillStyle = 'black'
+    const arrowWidth = 50, arrowHeight = 40;
 
     if (currCar.direction === 'y') {
-        context.beginPath();
-        context.moveTo(offset+(fieldSize * currCar.pos[0] + 1) + fieldVisibleSize - (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[1] + 1) + fieldVisibleSize / 2);
-        context.lineTo(offset+(fieldSize * currCar.pos[0] + 1) + fieldVisibleSize / 2, offset+(fieldSize * currCar.pos[1] + 1) + (fieldVisibleSize / 4));
-        context.lineTo(offset+(fieldSize * currCar.pos[0] + 1) + (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[1] + 1) + fieldVisibleSize / 2);
-        context.closePath();
-        context.fill()
-
-        context.beginPath();
-        context.moveTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + fieldVisibleSize - (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldVisibleSize / 2);
-        context.lineTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + fieldVisibleSize / 2, offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + (fieldVisibleSize * 0.75));
-        context.lineTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldVisibleSize / 2);
-        context.closePath();
-        context.fill()
+        // up arrow
+        drawImage(arrow, offset + (fieldSize * currCar.pos[0]) + fieldSize / 2 - arrowWidth / 2, offset+(fieldSize * currCar.pos[1] + 1) + fieldSize / 2 - arrowHeight / 2, 50, 40, 90);
+        
+        // down arrow
+        drawImage(arrow, offset + (fieldSize * currCar.pos[currCar.pos.length - 2]) + fieldSize / 2 - arrowWidth / 2, offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldSize / 2 - arrowHeight / 2, 50, 40, -90);
     } else if (currCar.direction === 'x') {
-        context.beginPath();
-        context.moveTo(offset+(fieldSize * currCar.pos[0] + 1) + fieldVisibleSize - (fieldVisibleSize / 2), offset+(fieldSize * currCar.pos[1] + 1) + fieldVisibleSize * 0.75);
-        context.lineTo(offset+(fieldSize * currCar.pos[0] + 1) + fieldVisibleSize / 2, offset+(fieldSize * currCar.pos[1] + 1) + (fieldVisibleSize / 4));
-        context.lineTo(offset+(fieldSize * currCar.pos[0] + 1) + (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[1] + 1) + fieldVisibleSize / 2);
-        context.closePath();
-        context.fill()
-
-        context.beginPath();
-        context.moveTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + fieldVisibleSize - (fieldVisibleSize / 4), offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldVisibleSize / 2);
-        context.lineTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + fieldVisibleSize / 2, offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + (fieldVisibleSize * 0.75));
-        context.lineTo(offset+(fieldSize * currCar.pos[currCar.pos.length - 2] + 1) + (fieldVisibleSize / 2), offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldVisibleSize / 4);
-        context.closePath();
-        context.fill()
+        // left arrow
+        drawImage(arrow, offset + (fieldSize * currCar.pos[0]) + fieldSize / 2 - arrowWidth / 2, offset+(fieldSize * currCar.pos[1] + 1) + fieldSize / 2 - arrowHeight / 2, 50, 40, 0);
+        
+        // right arrow
+        drawImage(arrow, offset + (fieldSize * currCar.pos[currCar.pos.length - 2]) + fieldSize / 2 - arrowWidth / 2, offset+(fieldSize * currCar.pos[currCar.pos.length - 1] + 1) + fieldSize / 2 - arrowHeight / 2, 50, 40, -180);
     }
 }
+$canvas.onmousemove = drawArrows
 
-document.onkeypress = function (e) {
+// closes the modal via a button click (if open)
+document.body.onkeypress = function (e) {
     console.log(e)
-    if (e.key === "q") {
-        document.getElementsByClassName("modal")[0].classList = "modal hide"
+    if (e.key === "q" || e.key === 'esc') {
+        $modal.classList = "modal hide"
     }
 }
 
+// chooses another level
 document.getElementById("nxtLvl").onclick = function (e) {
     while (true) {
         var newLevelNumber = Math.floor(Math.random()*levels.length)
         if (newLevelNumber !== levelNumber) {
             levelNumber = newLevelNumber
-            vehicles = levels[newLevelNumber];
+            vehicles = JSON.parse(JSON.stringify(levels[newLevelNumber])).map(car => new Vehicle(car.pos, car.color, car.red)); // deepcopy
             moves = 0;
             break;
         }
     }
     repaint()
-    confetti.clear()
+    $modal.classList = 'modal hide'
 }
 
-window.requestAnimationFrame(() => {
+// resets the level
+document.getElementById('playAgain').onclick = function (e) {
+    moves = 0;
+    console.log(levelNumber, levels[levelNumber] == vehicles)
+    // deepcopy
+    vehicles = JSON.parse(JSON.stringify(levels[levelNumber])).map(car => new Vehicle(car.pos, car.color, car.red))
     repaint()
-})
+    document.getElementById('move').textContent = moves;
+    $modal.classList = 'modal hide'
+}
+
+window.requestAnimationFrame(repaint)
